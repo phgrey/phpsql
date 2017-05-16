@@ -1,0 +1,12 @@
+{
+    "name": "phgrey/phpsql",
+    "description": "Some usefull tools for operating with data in php",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Sergey Semenov",
+            "email": "phgrey@gmail.com"
+        }
+    ],
+    "require": {}
+}
