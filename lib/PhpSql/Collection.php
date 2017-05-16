@@ -31,19 +31,16 @@ class Collection implements \IteratorAggregate
     /**
      * Returns data indexed, as a assoc array
      * @param $fields
+     * @param $options
      * @return array - data indexed
      * @throws Errors\NotImplemented
      */
-    public function getIndexed($fields)
+    public function getIndexed($fields, $options = [])
     {
-        asort($fields);
-        $fields = array_unique($fields);
-        if (length($fields) != 1) {
-            throw new Errors\NotImplemented('For now only 1 field can be indexed, got: ' . json_encode($fields));
-        }
-        $index_name = implode(',', $fields);
 
         $ind = new Index\Hash($this, $fields);
+
+        $index_name = $ind->name();
 
         if (empty($this->indexes[$index_name])) {
             $this->indexes[$index_name] = $ind;
@@ -52,29 +49,6 @@ class Collection implements \IteratorAggregate
         return $this->indexes[$index_name];
     }
 
-    /**
-     * Creates simple non-unique hash-style index for data given
-     * TODO: use stdlib for btree-like index when need
-     * TODO: move to separate trait IndexedCollection
-     * @param $data
-     * @param $field
-     * @return array - assoc array with keys - index values and values - array of records
-     */
-    protected static function hashIndex($data, $field)
-    {
-        $ret = array();
-
-        foreach ($data as $item) {
-            $key = $item[$field];
-            if (!isset($ret[$key])) {
-                $ret[$key] = [];
-            }
-
-            $arr[$key][] = $item;
-        }
-
-        return $ret;
-    }
 
     /**
      * @param \Iterator $data

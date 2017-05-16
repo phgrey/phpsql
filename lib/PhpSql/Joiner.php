@@ -37,76 +37,21 @@ trait Joiner
             throw new \Exception('Parts and on should have the same length');
         }
 
-        if ($type == 'right') {
-            $parts = array_reverse($parts);
-            $on = array_reverse($on);
-            $type = 'left';
-        }
-
         foreach ($parts as $i => &$part) {
             if (is_string($parts[$i])) {
                 $part = $this->fetchAll($parts[$i], $params);
-            } else {
-                $part = $parts[$i];
             }
 
+            //after the following we'll get joinable indexes there, ...
             $part = Collection::fromIterator($part)
-                ->getIndexed($on[$i]);
+                ->getIndexed([$on[$i]]);
         }
 
-        $ret = reset($parts);
-
-        for ($i = 1; $i < length($parts); $i++) {
-            $ret = $this->joinResults($ret, $parts[$i], $type);
-        }
-
-        return Collection::fromIterator(array_values($ret));
-    }
-
-    /**
-     * Here we gonna match multiple results each-to-each the way mysql does
-     * here You can see why unique indexes are cheaper
-     * @param array $base
-     * @param array $adds
-     * @param array $type
-     * @return array
-     * @throws Errors\NotImplemented
-     */
-    protected function joinResults($base, $adds, $type)
-    {
-
-
-        foreach ($adds as $id => $items_new) {
-            if ($type == 'left') {
-                if (empty($ret[$id])) {
-                    continue;
-                }
-            } else {
-                //here is good place for additional join types
-                throw new Errors\NotImplemented('Only left|right join can be used for now');
-            }
-            $items_original = empty($base[$id]) ? [] : $base[$id];
-
-            $base[$id] = [];
-
-            foreach ($items_original as $item_original) {
-                foreach ($items_new as $item_new) {
-                    $base[$id][] = $item_original + $item_new;
-                }
-            }
-        }
-
-        return $ret;
-    }
-
-    protected function index($data, $field)
-    {
-        return Collection::fromIterator($data)
-            ->getIndexed($field);
-    }
-
-    protected function unindex($index)
-    {
-        return 1;
+        //... join them and then return underlying collection
+        return array_reduce(array_slice($parts, 1),
+            function (Index\Joinable $memo, Index\Base $index) use ($type) {
+                return $memo->join($index, $type);
+            }, $parts[0]
+        )->collection();
     }
 }
