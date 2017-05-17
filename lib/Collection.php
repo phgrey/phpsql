@@ -45,10 +45,10 @@ class Collection implements \IteratorAggregate
 
 
     /**
-     * @param \Iterator $data
+     * @param array $data
      * @return static
      */
-    public static function fromIterator(\Iterator $data = null)
+    public static function fromIterator($data = null)
     {
         $ret = new static();
         if (!is_null($data)) {
