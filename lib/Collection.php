@@ -1,6 +1,7 @@
 <?php
 
 namespace PhpSql;
+use PhpSql\Errors\NotImplemented;
 
 /**
  * Class Index
@@ -9,9 +10,10 @@ namespace PhpSql;
  * @see Joiner::join for usage examples
  *
  */
-class Collection implements \IteratorAggregate
+class Collection implements Store\Readable
 {
     protected $data = [];
+
     protected $indexes = [];
 
 
@@ -22,40 +24,34 @@ class Collection implements \IteratorAggregate
         }
     }
 
+    public function __construct($store)
+    {
+        $this->data = $store;
+    }
+
     /**
      * Returns data indexed, as a assoc array
      * @param $fields
      * @param $options
-     * @return array - data indexed
+     * @return \PhpSql\Index - data indexed
      * @throws Errors\NotImplemented
      */
-    public function getIndexed($fields, $options = [])
+    public function getIndex($fields, $options = [])
     {
-
-        $ind = new Index\Hash($this, $fields);
-
-        $index_name = $ind->name();
-
-        if (empty($this->indexes[$index_name])) {
-            $this->indexes[$index_name] = $ind;
-        }
-
-        return $this->indexes[$index_name];
+        return new Index($this, $options + ['fields' => $fields]);
     }
 
 
-    /**
-     * @param array $data
-     * @return static
-     */
-    public static function fromIterator($data = null)
+
+
+    public function values($ids = [])
     {
-        $ret = new static();
-        if (!is_null($data)) {
-            $ret->data = $data;
+        if (!$ids) {
+            return $this;
+        } else {
+            return new static(array_map(function ($id) {
+                return $this->data[$id];
+            }, $ids));
         }
-        return $ret;
     }
-
-
 }

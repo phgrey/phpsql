@@ -27,7 +27,7 @@ trait Joiner
         //$parts and $on should be syncronized
         //probably we can move them to separate class Reflection e.g.
         //but there is nothing to code there for now
-        if (length($parts) != length($on)) {
+        if (count($parts) != count($on)) {
             throw new \Exception('Parts and on should have the same length');
         }
 
@@ -38,12 +38,12 @@ trait Joiner
 
             //after the following we'll get joinable indexes there, ...
             $part = Collection::fromIterator($part)
-                ->getIndexed([$on[$i]]);
+                ->getIndex([$on[$i]]);
         }
 
         //... join them and then return underlying collection
         return array_reduce(array_slice($parts, 1),
-            function (Index\Joinable $memo, Index\Base $index) use ($type) {
+            function (Index\Joinable $memo, \PhpSql\Index $index) use ($type) {
                 return $memo->join($index, $type);
             }, $parts[0]
         )->collection();

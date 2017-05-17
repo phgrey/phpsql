@@ -1,12 +1,12 @@
 <?php
-namespace PhpSql\Index;
+namespace PhpSql\Store;
 
-interface Joinable
+interface Joinable extends Indexer
 {
     /**
-     * @param Joinable $right
+     * @param $store
      * @param $type - join type. Engine-cpecific, but hash supports only left|right
      * @return Joinable
      */
-    public function join(Joinable $right, $type);
+    public function join(Joinable $store, $type);
 }
