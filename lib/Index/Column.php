@@ -1,10 +1,12 @@
 <?php
 
-namespace PhpSql;
+namespace PhpSql\Index;
 
 use \PhpSql\Collection;
+use PhpSql\Errors\NotImplemented;
+use PhpSql\Store;
 
-class Index
+class Column
 {
     /**
      * @var Collection
@@ -16,29 +18,25 @@ class Index
      */
     protected $fields;
 
-    /**
-     * @var  Store\Indexable
-     */
-    protected $back = null;
 
     protected $built = false;
 
-    public function __construct(Collection $collection, $options = [])
+    public function __construct(Store\Readable $collection, $options = [])
     {
         $options += [
             'type' => 'hash',
             'unique' => false
         ];
 
-        if (empty($options['fields']) && empty($options['callable'])) {
-            throw new \Exception('Either fields or callable parameter must be given');
+        if (empty($options['fields']) && empty($options['function'])) {
+            throw new \Exception('Either fields or function parameter must be given');
         }
 
         $this->collection = $collection;
         $this->fields = $options['fields'];
 
         if ($options['type'] == 'hash' && !$options['unique']) {
-            $this->back = new Store\AssocArray();
+            $this->indexer = new Store\AssocArray();
         } else {
             throw new NotImplemented('Only non-unique hash indexes available for now');
         }
@@ -53,24 +51,21 @@ class Index
 
         $field = reset($this->fields);
 
-        foreach ($this->collection as $pk => $item) {
-            $this->back->add([$item[$field]], [$pk]);
+        foreach ($this->collection->values() as $pk => $item) {
+            $this->indexer->add([$item[$field]], [$pk]);
         }
 
         $this->built = $pk;
     }
-
 
     public function collection()
     {
         return $this->collection;
     }
 
-
-    public function join(Index $right, $type)
+    public function values($ids)
     {
-        $this->back = static::merge($this->serialize(), $right->serialize(), $type);
-        return $this;
+        return $this->collection->values($ids);
     }
 
 
@@ -78,10 +73,10 @@ class Index
     {
         $this->built || $this->build();
 
-        $keys = $keys || $this->back->keys();
+        $keys = $keys || $this->indexer->keys();
 
         return array_reduce($keys, function ($memo, $key) {
-            $ids = $this->back->values($key);
+            $ids = $this->indexer->values($key);
             return $memo + [$key => $this->collection()->serialize($ids)];
         }, []);
     }

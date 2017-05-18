@@ -2,14 +2,15 @@
 namespace PhpSql\Store;
 
 use \PhpSql\Errors\NotImplemented;
+use PhpSql\Index\Back\Indexer;
 
 
-class AssocArray implements Indexer
+class AssocArray implements Readable, Indexer
 {
 
     protected $hash = [];
 
-    public function add($keys, $values)
+    public function add($keys, $values = [])
     {
         foreach (array_combine($keys, $values) as $key => $value) {
             //here what's will be different in unique
@@ -26,16 +27,14 @@ class AssocArray implements Indexer
         return array_keys($this->hash);
     }
 
-//    public function sorted($asc = true)
-//    {
-//        $list = array_keys($this->hash);
-//        asort($list);
-//        return $asc ? $list : array_reverse($list);
-//    }
-
-    public function values($key)
+    public function values($keys = [])
     {
-        return isset($this->hash[$key]) ? $this->hash[$key] : [];
+        return array_reduce($keys, function ($memo, $key) {
+            return isset($this->hash[$key])
+                ? array_merge($this->hash[$key], $memo)
+                : $memo
+            ;
+        }, []);
     }
 
 

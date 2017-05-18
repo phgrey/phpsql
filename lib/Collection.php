@@ -1,7 +1,6 @@
 <?php
 
 namespace PhpSql;
-use PhpSql\Errors\NotImplemented;
 
 /**
  * Class Index
@@ -10,48 +9,50 @@ use PhpSql\Errors\NotImplemented;
  * @see Joiner::join for usage examples
  *
  */
-class Collection implements Store\Readable
+class Collection implements Store\Readable, \IteratorAggregate
 {
     protected $data = [];
 
     protected $indexes = [];
 
 
-    public function getIterator()
-    {
-        foreach ($this->data as $key => $value) {
-            yield $key => $value;
-        }
-    }
-
     public function __construct($store)
     {
         $this->data = $store;
+    }
+
+    public function getIterator()
+    {
+        foreach ($this->values() as $key => $value) {
+            yield $key => $value;
+        }
     }
 
     /**
      * Returns data indexed, as a assoc array
      * @param $fields
      * @param $options
-     * @return \PhpSql\Index - data indexed
+     * @return \PhpSql\Index\Column - data indexed
      * @throws Errors\NotImplemented
      */
-    public function getIndex($fields, $options = [])
+    public function index($fields, $options = [])
     {
-        return new Index($this, $options + ['fields' => $fields]);
+        return new Index\Column($this, $options + ['fields' => $fields]);
     }
-
-
-
 
     public function values($ids = [])
     {
         if (!$ids) {
-            return $this;
+            return $this->data;
         } else {
-            return new static(array_map(function ($id) {
-                return $this->data[$id];
-            }, $ids));
+            return array_map(function ($id) {
+                return $this->get($id);
+            }, $ids);
         }
+    }
+
+    protected function get($id)
+    {
+        return $this->data[$id];
     }
 }

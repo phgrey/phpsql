@@ -1,7 +1,7 @@
 <?php
 namespace PhpSql\Store;
 
-interface Readable extends \IteratorAggregate
+interface Readable #extends \IteratorAggregate
 {
-    public function values($ids);
+    public function values($ids = []);
 }

@@ -20,7 +20,7 @@ trait Joiner
      * @param $params - values to be set in sql
      * @param string $type - type of join. for now (left|right)-only supported
      * @throws \Exception
-     * @return Collection
+     * @return array
      */
     public function join($parts, $on, $params = [], $type = 'left')
     {
@@ -33,19 +33,18 @@ trait Joiner
 
         foreach ($parts as $i => &$part) {
             if (is_string($parts[$i])) {
-                $part = $this->fetchAll($parts[$i], $params);
+                $part = $this->fetchAll($part, $params);
             }
 
             //after the following we'll get joinable indexes there, ...
-            $part = Collection::fromIterator($part)
-                ->getIndex([$on[$i]]);
+            $part = (new Collection($part))->index([$on[$i]]);
         }
 
         //... join them and then return underlying collection
-        return array_reduce(array_slice($parts, 1),
-            function (Index\Joinable $memo, \PhpSql\Index $index) use ($type) {
-                return $memo->join($index, $type);
-            }, $parts[0]
-        )->collection();
+        $ret = [];
+        foreach ((new Index\Joint($parts))->values() as $v) {
+            $ret[] = $v;
+        }
+        return $ret;
     }
 }
