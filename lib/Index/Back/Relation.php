@@ -62,7 +62,7 @@ class Relation implements Indexer
 
     public function values($keys = [])
     {
-        $keys = $keys || $this->keys();
+        $keys = $keys ? $keys : $this->keys();
         foreach ($keys as $key) {
             $row = $this->row($key);
             if ($this->checkJoin($row)) {
@@ -92,7 +92,7 @@ class Relation implements Indexer
     {
         $count = 1;
         foreach ($row as &$cell) {
-            $cell = $cell || [null];
+            $cell = $cell ? $cell : [null];
             $count *= count($cell);
         }
 

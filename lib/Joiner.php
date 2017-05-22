@@ -22,7 +22,7 @@ trait Joiner
      * @throws \Exception
      * @return array
      */
-    public function join($parts, $on, $params = [], $type = 'left')
+    public function join($parts, $on, $type = 'left', $params = [])
     {
         //$parts and $on should be syncronized
         //probably we can move them to separate class Reflection e.g.
@@ -36,14 +36,19 @@ trait Joiner
                 $part = $this->fetchAll($part, $params);
             }
 
+            if (! $part instanceof Collection) {
+                $part = new Collection($part);
+            }
+
             //after the following we'll get joinable indexes there, ...
-            $part = (new Collection($part))->index([$on[$i]]);
+            $part = $part->index([$on[$i]]);
         }
 
         //... join them and then return underlying collection
+        $collection = (new Index\Joint($parts, $type))->collection();
         $ret = [];
-        foreach ((new Index\Joint($parts))->values() as $v) {
-            $ret[] = $v;
+        foreach ($collection as $c) {
+            $ret[] = $c;
         }
         return $ret;
     }

@@ -63,7 +63,7 @@ class Column
         return $this->collection;
     }
 
-    public function values($ids)
+    public function values($ids = [])
     {
         return $this->collection->values($ids);
     }
@@ -71,9 +71,11 @@ class Column
 
     public function serialize($keys = [])
     {
-        $this->built || $this->build();
+        if (! $this->built) {
+            $this->build();
+        }
 
-        $keys = $keys || $this->indexer->keys();
+        $keys = $keys ? $keys : $this->indexer->keys();
 
         return array_reduce($keys, function ($memo, $key) {
             $ids = $this->indexer->values($key);

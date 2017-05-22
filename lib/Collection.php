@@ -9,36 +9,8 @@ namespace PhpSql;
  * @see Joiner::join for usage examples
  *
  */
-class Collection implements Store\Readable, \IteratorAggregate
+class Collection extends Store\Indexable
 {
-    protected $data = [];
-
-    protected $indexes = [];
-
-
-    public function __construct($store)
-    {
-        $this->data = $store;
-    }
-
-    public function getIterator()
-    {
-        foreach ($this->values() as $key => $value) {
-            yield $key => $value;
-        }
-    }
-
-    /**
-     * Returns data indexed, as a assoc array
-     * @param $fields
-     * @param $options
-     * @return \PhpSql\Index\Column - data indexed
-     * @throws Errors\NotImplemented
-     */
-    public function index($fields, $options = [])
-    {
-        return new Index\Column($this, $options + ['fields' => $fields]);
-    }
 
     public function values($ids = [])
     {
@@ -46,7 +18,7 @@ class Collection implements Store\Readable, \IteratorAggregate
             return $this->data;
         } else {
             return array_map(function ($id) {
-                return $this->get($id);
+                return is_null($id) ? $this->null() : $this->get($id);
             }, $ids);
         }
     }

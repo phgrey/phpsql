@@ -12,14 +12,8 @@ class AssocArray implements Readable, Indexer
 
     public function add($keys, $values = [])
     {
-        foreach (array_combine($keys, $values) as $key => $value) {
-            //here what's will be different in unique
-            if (!isset($hash[$key])) {
-                $hash[$key] = [];
-            }
-
-            $hash[$key][] = $value;
-        }
+        $this->hash += self::build($keys, $values);
+        return $this;
     }
 
     public function keys()
@@ -44,6 +38,24 @@ class AssocArray implements Readable, Indexer
     }
 
 
+    public static function build($keys, $values)
+    {
+        if (count($keys) != count($values)) {
+            throw new \Exception('Keys and values should have the same length');
+        }
+
+        $hash = [];
+
+        foreach ($keys as $i => $key) {
+            //here what's will be different in unique
+            if (!isset($hash[$key])) {
+                $hash[$key] = [];
+            }
+
+            $hash[$key][] = $values[$i];
+        }
+        return $hash;
+    }
 
 
     protected static function merge($hashes, $type = 'left')

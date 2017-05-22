@@ -9,21 +9,33 @@ class Joint extends Item
      */
     protected $columns = [];
 
+    /**
+     * @var string
+     */
+    protected $type = '';
+
     public function __construct($columns, $type = 'left')
     {
         $this->columns = $columns;
-        $indexers = array_map($columns, function (Column $c) {
+        $indexers = array_map(function (Column $c) {
             return $c->indexer;
-        });
-        $collections = array_map($columns, function (Column $c) {
-            return $c->values();
-        });
-        $this->indexer = new Back\Relation($indexers, $collections);
+        }, $columns);
+        $collections = array_map(function (Column $c) {
+            return $c->collection();
+        }, $columns);
+
+        $this->indexer = new Back\Relation($indexers, $collections, $type);
+
+        $this->type = $type;
     }
 
-    public function join(Item $another)
+    public function join(Item $another, $type = 'left')
     {
-        $this->indexer->add([$another->indexer], [$another->values()]);
+        if ($type != $this->type) {
+            return parent::join($another, $type);
+        }
+
+        $this->indexer->add([$another->indexer], [$another->collection()]);
         return $this;
     }
 
