@@ -63,12 +63,15 @@ class Relation implements Indexer
     public function values($keys = [])
     {
         $keys = $keys ? $keys : $this->keys();
+        $res = [];
         foreach ($keys as $key) {
             $row = $this->row($key);
             if ($this->checkJoin($row)) {
-                yield $key => $row;
+                $res[] = $row;
             }
         }
+
+        return $res;
     }
 
     protected function checkJoin($row)

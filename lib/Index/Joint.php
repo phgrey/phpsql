@@ -43,13 +43,12 @@ class Joint extends Item
     public function values($ids = [])
     {
         foreach ($this->indexer->values($ids) as $row) {
-            foreach ($row as $i => &$cell) {
-                $cell = $this->columns[$i]->values($cell);
-            }
-            $data = Back\Relation::multiple($row);
-            foreach ($data as $record) {
-                $record = call_user_func_array('array_merge', $record);
-                yield $record;
+            foreach (Back\Relation::multiple($row) as $record) {
+                $aggr = [];
+                foreach ($record as $i => $id) {
+                    $aggr += $this->columns[$i]->values([$id])[0];
+                }
+                yield $aggr;
             }
         }
     }

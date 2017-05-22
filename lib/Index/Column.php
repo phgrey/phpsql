@@ -6,7 +6,7 @@ use \PhpSql\Collection;
 use PhpSql\Errors\NotImplemented;
 use PhpSql\Store;
 
-class Column
+class Column extends Item
 {
     /**
      * @var Collection
@@ -40,6 +40,9 @@ class Column
         } else {
             throw new NotImplemented('Only non-unique hash indexes available for now');
         }
+
+        //TODO: make a realy lazy loading here
+        $this->build();
     }
 
 
@@ -69,19 +72,19 @@ class Column
     }
 
 
-    public function serialize($keys = [])
-    {
-        if (! $this->built) {
-            $this->build();
-        }
-
-        $keys = $keys ? $keys : $this->indexer->keys();
-
-        return array_reduce($keys, function ($memo, $key) {
-            $ids = $this->indexer->values($key);
-            return $memo + [$key => $this->collection()->serialize($ids)];
-        }, []);
-    }
+//    public function serialize($keys = [])
+//    {
+//        if (! $this->built) {
+//            $this->build();
+//        }
+//
+//        $keys = $keys ? $keys : $this->indexer->keys();
+//
+//        return array_reduce($keys, function ($memo, $key) {
+//            $ids = $this->indexer->values($key);
+//            return $memo + [$key => $this->collection()->serialize($ids)];
+//        }, []);
+//    }
 
     public function name()
     {
